@@ -9,22 +9,37 @@ base = rioAptos.copy()
 
 # Escolha de bairro
 bairros = base["bairro"].unique()
-bairro = st.selectbox(label="Bairrox do Rio", options = bairros)
 
-valores = st.slider("Valor", 0, 2000, (5, 15))
-st.write(valores)
+bairro = st.selectbox(
+    label="Bairrox do Rio", 
+    options = ["Todos"] + list(bairros)
+)
 
-# Escolha das colunas
-indices = base["bairro"] == bairro
-aptos_bairro = base[indices]
+if bairro == "Todos":
+    aptos_bairro = base
+else:
+    aptos_bairro = base[base["bairro"] == bairro]
+
 #st.dataframe(base[base["bairro"] == bairro])
 qtde_aptos = aptos_bairro.shape[0]
 st.text(f"Total: {qtde_aptos} apartamentos encontrados")
 
+# Pegando o valor mínimo e maximo do db
+valorMax = base["preco"].max()
+valorMin = base["preco"].min()
+
+# Slider de preços
+valores = st.slider("Valor", valorMin, valorMax, (valorMin, valorMax))
+st.write(valores)
+
+# Escolha das clunas
 colunas = aptos_bairro.columns
 colunas_selecionadas = st.multiselect(label="Variáveis" , options = colunas)
 
-st.dataframe(aptos_bairro[colunas_selecionadas])
-st.dataframe(aptos_bairro)
+# definicao do dataframe
+apartamentos = aptos_bairro[
+    (aptos_bairro["preco"] >= valores[0]) &
+    (aptos_bairro["preco"] <= valores[1])
+]
 
-
+st.dataframe(apartamentos[colunas_selecionadas])
